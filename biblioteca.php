@@ -59,6 +59,15 @@ if (isset($_POST['enviar'])){ //boton del formulario y crea la variable que vien
             text-align: center;
         }
     </style>
+    <script>
+
+        function valorSelect(){
+
+        }
+        window.onload = function(){
+
+        }
+    </script>
 </head>
 <body>
 <header><!--Cabecera con nombre y logotipo-->
@@ -66,18 +75,31 @@ if (isset($_POST['enviar'])){ //boton del formulario y crea la variable que vien
     <h1>Pau Casesnoves</h1>
 </header>
 <form action="biblioteca.php" method="post">
-    <select name="ordenacion">
+    <select name="ordenacion" id="ordenacion">
         <option value="ID_AUT_ASC">Codi Asc</option>
         <option value="ID_AUT_DESC">Codi Desc</option>
         <option value="NOM_AUT_ASC">Nom Asc</option>
         <option value="NOM_AUT_DESC">Nom Desc</option>
     </select>
-    <input type="submit" name="enviar">
+    <input type="submit" name="enviar" id="enviar">
 </form>
 <?php
 
 if (isset($orden)){
-    
+    $sql = "select ID_AUT, NOM_AUT from AUTORS order by $orden";
+    $cursor = $mysqli->query($sql) or die($sql);//creamos el cursor.
+    echo "<table>";
+    echo "<tr>";
+    echo "<th>Codi</th>";
+    echo "<th>Nombre</th>";
+    echo "</tr>";
+    while($row = $cursor->fetch_assoc()){
+        echo "<tr>";
+        echo "<td>".$row["ID_AUT"]."</td>";
+        echo "<td>".$row["NOM_AUT"]."</td>";
+        echo "</tr>";
+    }
+    echo "</table>";
 }else{
     $sql = "select ID_AUT, NOM_AUT from AUTORS order by  ID_AUT asc ";
     $cursor = $mysqli->query($sql) or die($sql);//creamos el cursor.
