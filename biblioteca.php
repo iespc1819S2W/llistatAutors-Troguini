@@ -30,12 +30,12 @@ $mysqli->set_charset("utf8");//le damos utf8 a los valores que nos vienen de la 
         echo "<td>".$row["NOM_AUT"]."</td>";
     echo "</tr>";
 }*/
-$buscador = "";
 if (isset($_POST['botonBuscador'])){
     $buscador = $mysqli->real_escape_string($_POST['buscador']);
 }
 if (isset($_POST['enviar'])){ //boton del formulario y crea la variable que viene del select
-    $ordenacion = (isset($_POST['ordenacion']))?$_POST['ordenacion']:"";//viene del formulario del select
+    $ordenacion = isset($_POST['ordenacion'])?$_POST['ordenacion']:"";//viene del formulario del select
+    $buscadorO = isset($_POST['buscadorO'])?$_POST['buscadorO']:"";
     switch ($ordenacion){
         case "ID_AUT_ASC":
             $orden = "ID_AUT ASC";
@@ -79,7 +79,8 @@ if (isset($_POST['enviar'])){ //boton del formulario y crea la variable que vien
     <h1>Pau Casesnoves</h1>
 </header>
 <form action="biblioteca.php" method="post">
-    <input type="text" name="buscador" id="buscador" value="<?php ?>">
+    <input type="text" name="buscador" id="buscador">
+    <input type="hidden" name="buscadorO" id="buscadorO" value="<?php $buscador?>">
     <button name="botonBuscador" id="botonBuscador">Buscar</button>
     <select name="ordenacion" id="ordenacion">
         <option value="ID_AUT_ASC">Codi Asc</option>
@@ -109,7 +110,7 @@ if (isset($_POST['enviar'])){ //boton del formulario y crea la variable que vien
 //}else{
 //    echo "No hay resultados";
 //}
-if ((isset($orden) || isset($buscador)) || (isset($orden) && isset($buscador))){
+if (isset($orden) || isset($buscador)){
     if (isset($orden)){
         $sql = "select ID_AUT, NOM_AUT from AUTORS order by $orden";
         $cursor = $mysqli->query($sql) or die($sql);//creamos el cursor.
