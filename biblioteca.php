@@ -30,8 +30,10 @@ $mysqli->set_charset("utf8");//le damos utf8 a los valores que nos vienen de la 
         echo "<td>".$row["NOM_AUT"]."</td>";
     echo "</tr>";
 }*/
-
-
+$buscador = "";
+if (isset($_POST['botonBuscador'])){
+    $buscador = $mysqli->real_escape_string($_POST['buscador']);
+}
 if (isset($_POST['enviar'])){ //boton del formulario y crea la variable que viene del select
     $ordenacion = (isset($_POST['ordenacion']))?$_POST['ordenacion']:"";//viene del formulario del select
     switch ($ordenacion){
@@ -60,12 +62,14 @@ if (isset($_POST['enviar'])){ //boton del formulario y crea la variable que vien
         }
     </style>
     <script>
-
-        function valorSelect(){
-
-        }
         window.onload = function(){
-
+            document.getElementById("ordenacion").value = "<?php
+                    if (empty($ordenacion)){
+                        echo "ID_AUT_ASC";
+                    }else{
+                        echo $ordenacion;
+                    }
+                ?>"
         }
     </script>
 </head>
@@ -75,6 +79,8 @@ if (isset($_POST['enviar'])){ //boton del formulario y crea la variable que vien
     <h1>Pau Casesnoves</h1>
 </header>
 <form action="biblioteca.php" method="post">
+    <input type="text" name="buscador" id="buscador" value="<?php ?>">
+    <button name="botonBuscador" id="botonBuscador">Buscar</button>
     <select name="ordenacion" id="ordenacion">
         <option value="ID_AUT_ASC">Codi Asc</option>
         <option value="ID_AUT_DESC">Codi Desc</option>
@@ -84,22 +90,57 @@ if (isset($_POST['enviar'])){ //boton del formulario y crea la variable que vien
     <input type="submit" name="enviar" id="enviar">
 </form>
 <?php
-
-if (isset($orden)){
-    $sql = "select ID_AUT, NOM_AUT from AUTORS order by $orden";
-    $cursor = $mysqli->query($sql) or die($sql);//creamos el cursor.
-    echo "<table>";
-    echo "<tr>";
-    echo "<th>Codi</th>";
-    echo "<th>Nombre</th>";
-    echo "</tr>";
-    while($row = $cursor->fetch_assoc()){
+//Intento de buscador
+//if (isset($buscador)){
+//    $sqlB = "select * from AUTORS where ID_AUT like '%$buscador%' or NOM_AUT like '%$buscador%'";
+//    $cursorB = $mysqli->query($sqlB) or die($sqlB);
+//    echo "<table>";
+//    echo "<tr>";
+//    echo "<th>Codi</th>";
+//    echo "<th>Nombre</th>";
+//    echo "</tr>";
+//    while($rowB = $cursorB->fetch_assoc()){
+//        echo "<tr>";
+//        echo "<td>".$rowB["ID_AUT"]."</td>";
+//        echo "<td>".$rowB["NOM_AUT"]."</td>";
+//        echo "</tr>";
+//    }
+//    echo "</table>";
+//}else{
+//    echo "No hay resultados";
+//}
+if ((isset($orden) || isset($buscador)) || (isset($orden) && isset($buscador))){
+    if (isset($orden)){
+        $sql = "select ID_AUT, NOM_AUT from AUTORS order by $orden";
+        $cursor = $mysqli->query($sql) or die($sql);//creamos el cursor.
+        echo "<table>";
         echo "<tr>";
-        echo "<td>".$row["ID_AUT"]."</td>";
-        echo "<td>".$row["NOM_AUT"]."</td>";
+        echo "<th>Codi</th>";
+        echo "<th>Nombre</th>";
         echo "</tr>";
+        while($row = $cursor->fetch_assoc()){
+            echo "<tr>";
+            echo "<td>".$row["ID_AUT"]."</td>";
+            echo "<td>".$row["NOM_AUT"]."</td>";
+            echo "</tr>";
+        }
+        echo "</table>";
+    }else{
+        $sqlB = "select * from AUTORS where ID_AUT like '%$buscador%' or NOM_AUT like '%$buscador%'";
+        $cursorB = $mysqli->query($sqlB) or die($sqlB);
+        echo "<table>";
+        echo "<tr>";
+        echo "<th>Codi</th>";
+        echo "<th>Nombre</th>";
+        echo "</tr>";
+        while($rowB = $cursorB->fetch_assoc()){
+            echo "<tr>";
+            echo "<td>".$rowB["ID_AUT"]."</td>";
+            echo "<td>".$rowB["NOM_AUT"]."</td>";
+            echo "</tr>";
+        }
+        echo "</table>";
     }
-    echo "</table>";
 }else{
     $sql = "select ID_AUT, NOM_AUT from AUTORS order by  ID_AUT asc ";
     $cursor = $mysqli->query($sql) or die($sql);//creamos el cursor.
@@ -116,7 +157,6 @@ if (isset($orden)){
     }
     echo "</table>";
 }
-
 ?>
 </body>
 </html>
