@@ -30,12 +30,13 @@ $mysqli->set_charset("utf8");//le damos utf8 a los valores que nos vienen de la 
         echo "<td>".$row["NOM_AUT"]."</td>";
     echo "</tr>";
 }*/
+$buscador = "";
 if (isset($_POST['botonBuscador'])){
     $buscador = $mysqli->real_escape_string($_POST['buscador']);
 }
 if (isset($_POST['enviar'])){ //boton del formulario y crea la variable que viene del select
     $ordenacion = isset($_POST['ordenacion'])?$_POST['ordenacion']:"";//viene del formulario del select
-    $buscadorO = isset($_POST['buscadorO'])?$_POST['buscadorO']:"";
+    $buscador = $mysqli->real_escape_string($_POST['buscador']);
     switch ($ordenacion){
         case "ID_AUT_ASC":
             $orden = "ID_AUT ASC";
@@ -51,6 +52,14 @@ if (isset($_POST['enviar'])){ //boton del formulario y crea la variable que vien
             break;
     }
 }
+$tuplasPagina = 10;
+$sqlT = "select count(*) as numTuplas from AUTORS where NOM_AUT like '%$buscador%' or ID_AUT like '%$buscador%'";
+$resultado = $mysqli -> query($sqlT) or die($sqlT);
+if ($row = $resultado-> fetch_assoc()){
+    $totalTuplas = $row['numTuplas'];
+    $totalPaginas = ceil($totalTuplas/$tuplasPagina);
+}
+$pagina = 1;
 ?>
 <html>
 <head>
@@ -79,8 +88,13 @@ if (isset($_POST['enviar'])){ //boton del formulario y crea la variable que vien
     <h1>Pau Casesnoves</h1>
 </header>
 <form action="biblioteca.php" method="post">
-    <input type="text" name="buscador" id="buscador">
-    <input type="hidden" name="buscadorO" id="buscadorO" value="<?php $buscador?>">
+    <input type="text" name="buscador" id="buscador" value="<?php
+        if(isset($buscador)){
+            echo $buscador;
+        }else{
+            echo "";
+        }
+    ?>">
     <button name="botonBuscador" id="botonBuscador">Buscar</button>
     <select name="ordenacion" id="ordenacion">
         <option value="ID_AUT_ASC">Codi Asc</option>
@@ -91,28 +105,25 @@ if (isset($_POST['enviar'])){ //boton del formulario y crea la variable que vien
     <input type="submit" name="enviar" id="enviar">
 </form>
 <?php
-//Intento de buscador
-//if (isset($buscador)){
-//    $sqlB = "select * from AUTORS where ID_AUT like '%$buscador%' or NOM_AUT like '%$buscador%'";
-//    $cursorB = $mysqli->query($sqlB) or die($sqlB);
-//    echo "<table>";
-//    echo "<tr>";
-//    echo "<th>Codi</th>";
-//    echo "<th>Nombre</th>";
-//    echo "</tr>";
-//    while($rowB = $cursorB->fetch_assoc()){
-//        echo "<tr>";
-//        echo "<td>".$rowB["ID_AUT"]."</td>";
-//        echo "<td>".$rowB["NOM_AUT"]."</td>";
-//        echo "</tr>";
-//    }
-//    echo "</table>";
-//}else{
-//    echo "No hay resultados";
-//}
 if (isset($orden) || isset($buscador)){
     if (isset($orden)){
-        $sql = "select ID_AUT, NOM_AUT from AUTORS order by $orden";
+        if ($buscador){
+        $sql = "select * from AUTORS where ID_AUT like '%$buscador%' or NOM_AUT like '%$buscador%' order by $orden limit $tuplasPagina";
+            $cursor = $mysqli->query($sql) or die($sql);//creamos el cursor.
+            echo "<table>";
+            echo "<tr>";
+            echo "<th>Codi</th>";
+            echo "<th>Nombre</th>";
+            echo "</tr>";
+            while($row = $cursor->fetch_assoc()){
+                echo "<tr>";
+                echo "<td>".$row["ID_AUT"]."</td>";
+                echo "<td>".$row["NOM_AUT"]."</td>";
+                echo "</tr>";
+            }
+            echo "</table>";
+        }else{
+        $sql = "select ID_AUT, NOM_AUT from AUTORS order by $orden limit $tuplasPagina";
         $cursor = $mysqli->query($sql) or die($sql);//creamos el cursor.
         echo "<table>";
         echo "<tr>";
@@ -126,8 +137,9 @@ if (isset($orden) || isset($buscador)){
             echo "</tr>";
         }
         echo "</table>";
+        }
     }else{
-        $sqlB = "select * from AUTORS where ID_AUT like '%$buscador%' or NOM_AUT like '%$buscador%'";
+        $sqlB = "select * from AUTORS where ID_AUT like '%$buscador%' or NOM_AUT like '%$buscador%' limit $tuplasPagina";
         $cursorB = $mysqli->query($sqlB) or die($sqlB);
         echo "<table>";
         echo "<tr>";
@@ -158,6 +170,9 @@ if (isset($orden) || isset($buscador)){
     }
     echo "</table>";
 }
+    echo "<div>";
+        echo $pagina."/".$totalPaginas;
+    echo "</div>";
 ?>
 </body>
 </html>
