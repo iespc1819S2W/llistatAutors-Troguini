@@ -13,8 +13,6 @@ $cursor = query($sql) or die($sql);
 $host = "127.0.0.1";
 $usuario = "root";
 $contra = "";
-//$usuario = "miguel";//usuario creado en portatil personal
-//$contra = "Barbara123";//usuario creado en portatil personal
 $basededatos = "biblioteca";
 $mysqli = new mysqli($host,$usuario,$contra,$basededatos);//con esta linea nos estamos conectando a la base de datos.
 if (!$mysqli){//Por si no funciona la conexión.
@@ -31,12 +29,17 @@ $mysqli->set_charset("utf8");//le damos utf8 a los valores que nos vienen de la 
     echo "</tr>";
 }*/
 $buscador = "";
-if (isset($_POST['botonBuscador'])){
-    $buscador = $mysqli->real_escape_string($_POST['buscador']);
+if (isset($_POST['botonBuscador'])) {
+    $pagina = 1;
 }
+if (isset($_POST['buscador'])){
+    $pagina = 1;
+    $buscador = $mysqli->real_escape_string($_POST['buscador']);
+    
+}
+
 if (isset($_POST['enviar'])){ //boton del formulario y crea la variable que viene del select
     $ordenacion = isset($_POST['ordenacion'])?$_POST['ordenacion']:"";//viene del formulario del select
-    $buscador = $mysqli->real_escape_string($_POST['buscador']);
     switch ($ordenacion){
         case "ID_AUT_ASC":
             $orden = "ID_AUT ASC";
@@ -51,6 +54,8 @@ if (isset($_POST['enviar'])){ //boton del formulario y crea la variable que vien
             $orden = "NOM_AUT DESC";
             break;
     }
+}else{
+    $orden = "ID_AUT ASC";
 }
 $tuplasPagina = 10;
 $sqlT = "select count(*) as numTuplas from AUTORS where NOM_AUT like '%$buscador%' or ID_AUT like '%$buscador%'";
@@ -60,6 +65,25 @@ if ($row = $resultado-> fetch_assoc()){
     $totalPaginas = ceil($totalTuplas/$tuplasPagina);
 }
 $pagina = 1;
+if (isset($_POST['pagina'])){
+    $pagina = $_POST['pagina'];
+}
+if (isset($_POST['siguiente'])){
+    if ($pagina < $totalPaginas){
+        $pagina++;
+    }
+}
+if (isset($_POST['primero'])){
+    $pagina = 1;
+}
+if (isset($_POST['anterior'])){
+    if ($pagina > 1){
+        $pagina--;
+    }
+}
+if (isset($_POST['ultimo'])){
+    $pagina = $totalPaginas;
+}
 ?>
 <html>
 <head>
@@ -88,13 +112,7 @@ $pagina = 1;
     <h1>Pau Casesnoves</h1>
 </header>
 <form action="biblioteca.php" method="post">
-    <input type="text" name="buscador" id="buscador" value="<?php
-        if(isset($buscador)){
-            echo $buscador;
-        }else{
-            echo "";
-        }
-    ?>">
+    <input type="text" name="buscador" id="buscador" value="<?php echo $buscador;?>">
     <button name="botonBuscador" id="botonBuscador">Buscar</button>
     <select name="ordenacion" id="ordenacion">
         <option value="ID_AUT_ASC">Codi Asc</option>
@@ -103,60 +121,85 @@ $pagina = 1;
         <option value="NOM_AUT_DESC">Nom Desc</option>
     </select>
     <input type="submit" name="enviar" id="enviar">
+    <input type="hidden" name="pagina" value="<?php
+        echo $pagina;
+    ?>">
+    <button name="primero">Primero</button>
+    <button name="anterior">Anterior</button>
+    <button name="siguiente">Siguiente</button>
+    <button name="ultimo">Ultimo</button>
 </form>
 <?php
-if (isset($orden) || isset($buscador)){
-    if (isset($orden)){
-        if ($buscador){
-        $sql = "select * from AUTORS where ID_AUT like '%$buscador%' or NOM_AUT like '%$buscador%' order by $orden limit $tuplasPagina";
-            $cursor = $mysqli->query($sql) or die($sql);//creamos el cursor.
-            echo "<table>";
-            echo "<tr>";
-            echo "<th>Codi</th>";
-            echo "<th>Nombre</th>";
-            echo "</tr>";
-            while($row = $cursor->fetch_assoc()){
-                echo "<tr>";
-                echo "<td>".$row["ID_AUT"]."</td>";
-                echo "<td>".$row["NOM_AUT"]."</td>";
-                echo "</tr>";
-            }
-            echo "</table>";
-        }else{
-        $sql = "select ID_AUT, NOM_AUT from AUTORS order by $orden limit $tuplasPagina";
-        $cursor = $mysqli->query($sql) or die($sql);//creamos el cursor.
-        echo "<table>";
-        echo "<tr>";
-        echo "<th>Codi</th>";
-        echo "<th>Nombre</th>";
-        echo "</tr>";
-        while($row = $cursor->fetch_assoc()){
-            echo "<tr>";
-            echo "<td>".$row["ID_AUT"]."</td>";
-            echo "<td>".$row["NOM_AUT"]."</td>";
-            echo "</tr>";
-        }
-        echo "</table>";
-        }
-    }else{
-        $sqlB = "select * from AUTORS where ID_AUT like '%$buscador%' or NOM_AUT like '%$buscador%' limit $tuplasPagina";
-        $cursorB = $mysqli->query($sqlB) or die($sqlB);
-        echo "<table>";
-        echo "<tr>";
-        echo "<th>Codi</th>";
-        echo "<th>Nombre</th>";
-        echo "</tr>";
-        while($rowB = $cursorB->fetch_assoc()){
-            echo "<tr>";
-            echo "<td>".$rowB["ID_AUT"]."</td>";
-            echo "<td>".$rowB["NOM_AUT"]."</td>";
-            echo "</tr>";
-        }
-        echo "</table>";
-    }
-}else{
-    $sql = "select ID_AUT, NOM_AUT from AUTORS order by  ID_AUT asc ";
-    $cursor = $mysqli->query($sql) or die($sql);//creamos el cursor.
+//if (isset($orden) || isset($buscador)){
+//    if (isset($orden)){
+//        if ($buscador){
+//        //$tuplaInicial = ($pagina - 1) * $tuplasPagina;
+//        $sql = "select * from AUTORS where ID_AUT like '%$buscador%' or NOM_AUT like '%$buscador%' order by $orden limit $tuplaInicial";
+//            $cursor = $mysqli->query($sql) or die($sql);//creamos el cursor.
+//            echo "<table>";
+//            echo "<tr>";
+//            echo "<th>Codi</th>";
+//            echo "<th>Nombre</th>";
+//            echo "</tr>";
+//            while($row = $cursor->fetch_assoc()){
+//                echo "<tr>";
+//                echo "<td>".$row["ID_AUT"]."</td>";
+//                echo "<td>".$row["NOM_AUT"]."</td>";
+//                echo "</tr>";
+//            }
+//            echo "</table>";
+//        }else{
+//        $sql = "select ID_AUT, NOM_AUT from AUTORS order by $orden limit $tuplasPagina";
+//        $cursor = $mysqli->query($sql) or die($sql);//creamos el cursor.
+//        echo "<table>";
+//        echo "<tr>";
+//        echo "<th>Codi</th>";
+//        echo "<th>Nombre</th>";
+//        echo "</tr>";
+//        while($row = $cursor->fetch_assoc()){
+//            echo "<tr>";
+//            echo "<td>".$row["ID_AUT"]."</td>";
+//            echo "<td>".$row["NOM_AUT"]."</td>";
+//            echo "</tr>";
+//        }
+//        echo "</table>";
+//        }
+//    }else{
+//        $sqlB = "select * from AUTORS where ID_AUT like '%$buscador%' or NOM_AUT like '%$buscador%' limit $tuplasPagina";
+//        $cursorB = $mysqli->query($sqlB) or die($sqlB);
+//        echo "<table>";
+//        echo "<tr>";
+//        echo "<th>Codi</th>";
+//        echo "<th>Nombre</th>";
+//        echo "</tr>";
+//        while($rowB = $cursorB->fetch_assoc()){
+//            echo "<tr>";
+//            echo "<td>".$rowB["ID_AUT"]."</td>";
+//            echo "<td>".$rowB["NOM_AUT"]."</td>";
+//            echo "</tr>";
+//        }
+//        echo "</table>";
+//    }
+//}else{
+//    $sql = "select ID_AUT, NOM_AUT from AUTORS order by  ID_AUT asc ";
+//    $cursor = $mysqli->query($sql) or die($sql);//creamos el cursor.
+//    echo "<table>";
+//    echo "<tr>";
+//    echo "<th>Codi</th>";
+//    echo "<th>Nombre</th>";
+//    echo "</tr>";
+//    while($row = $cursor->fetch_assoc()){
+//        echo "<tr>";
+//        echo "<td>".$row["ID_AUT"]."</td>";
+//        echo "<td>".$row["NOM_AUT"]."</td>";
+//        echo "</tr>";
+//    }
+//    echo "</table>";
+//}
+    //Necesito $buscador, $tuplasPagina, $tuplaInicial = ($pagina - 1) * $tuplasPagina;
+    $tuplaInicial = ($pagina - 1) * $tuplasPagina;
+    $sql = "select ID_AUT,NOM_AUT from AUTORS where ID_AUT like '%$buscador%' or NOM_AUT like '%$buscador%' order by $orden limit $tuplaInicial,$tuplasPagina";
+    $cursor = $mysqli->query($sql) or die($sql);
     echo "<table>";
     echo "<tr>";
     echo "<th>Codi</th>";
@@ -169,7 +212,6 @@ if (isset($orden) || isset($buscador)){
         echo "</tr>";
     }
     echo "</table>";
-}
     echo "<div>";
         echo $pagina."/".$totalPaginas;
     echo "</div>";
