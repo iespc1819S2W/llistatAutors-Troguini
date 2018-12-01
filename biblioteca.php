@@ -29,14 +29,12 @@ $mysqli->set_charset("utf8");//le damos utf8 a los valores que nos vienen de la 
     echo "</tr>";
 }*/
 $buscador = "";
-if (isset($_POST['botonBuscador'])) {
-    $pagina = 1;
-}
+$pagina = 1;
+
 if (isset($_POST['buscador'])){
-    $pagina = 1;
-    $buscador = $mysqli->real_escape_string($_POST['buscador']);
-    
+    $buscador = $mysqli->real_escape_string($_POST['buscador']);   
 }
+
 
 if (isset($_POST['enviar'])){ //boton del formulario y crea la variable que viene del select
     $ordenacion = isset($_POST['ordenacion'])?$_POST['ordenacion']:"";//viene del formulario del select
@@ -62,27 +60,90 @@ $sqlT = "select count(*) as numTuplas from AUTORS where NOM_AUT like '%$buscador
 $resultado = $mysqli -> query($sqlT) or die($sqlT);
 if ($row = $resultado-> fetch_assoc()){
     $totalTuplas = $row['numTuplas'];
-    $totalPaginas = ceil($totalTuplas/$tuplasPagina);
+    $totalPaginas = ceil($totalTuplas/$tuplasPagina);//rendondea a lo alto ceil.
 }
-$pagina = 1;
 if (isset($_POST['pagina'])){
-    $pagina = $_POST['pagina'];
+    if (isset($_POST['botonBuscador']) || isset($_POST['enviar'])) {
+        $pagina = 1;
+    }else{
+        $pagina = $_POST['pagina'];
+    } 
 }
 if (isset($_POST['siguiente'])){
     if ($pagina < $totalPaginas){
         $pagina++;
+         $ordenacion = isset($_POST['ordenacion'])?$_POST['ordenacion']:"";//viene del formulario del select
+    switch ($ordenacion){
+        case "ID_AUT_ASC":
+            $orden = "ID_AUT ASC";
+            break;
+        case "ID_AUT_DESC":
+            $orden = "ID_AUT DESC";
+            break;
+        case "NOM_AUT_ASC":
+            $orden = "NOM_AUT ASC";
+            break;
+        case "NOM_AUT_DESC":
+            $orden = "NOM_AUT DESC";
+            break;
+    }
     }
 }
 if (isset($_POST['primero'])){
     $pagina = 1;
+     $ordenacion = isset($_POST['ordenacion'])?$_POST['ordenacion']:"";//viene del formulario del select
+    switch ($ordenacion){
+        case "ID_AUT_ASC":
+            $orden = "ID_AUT ASC";
+            break;
+        case "ID_AUT_DESC":
+            $orden = "ID_AUT DESC";
+            break;
+        case "NOM_AUT_ASC":
+            $orden = "NOM_AUT ASC";
+            break;
+        case "NOM_AUT_DESC":
+            $orden = "NOM_AUT DESC";
+            break;
+    }
 }
 if (isset($_POST['anterior'])){
     if ($pagina > 1){
         $pagina--;
+         $ordenacion = isset($_POST['ordenacion'])?$_POST['ordenacion']:"";//viene del formulario del select
+    switch ($ordenacion){
+        case "ID_AUT_ASC":
+            $orden = "ID_AUT ASC";
+            break;
+        case "ID_AUT_DESC":
+            $orden = "ID_AUT DESC";
+            break;
+        case "NOM_AUT_ASC":
+            $orden = "NOM_AUT ASC";
+            break;
+        case "NOM_AUT_DESC":
+            $orden = "NOM_AUT DESC";
+            break;
+    }
     }
 }
 if (isset($_POST['ultimo'])){
     $pagina = $totalPaginas;
+     $ordenacion = isset($_POST['ordenacion'])?$_POST['ordenacion']:"";//viene del formulario del select
+    switch ($ordenacion){
+        case "ID_AUT_ASC":
+            $orden = "ID_AUT ASC";
+            break;
+        case "ID_AUT_DESC":
+            $orden = "ID_AUT DESC";
+            break;
+        case "NOM_AUT_ASC":
+            $orden = "NOM_AUT ASC";
+            break;
+        case "NOM_AUT_DESC":
+            $orden = "NOM_AUT DESC";
+            break;
+    }
 }
 ?>
 <html>
