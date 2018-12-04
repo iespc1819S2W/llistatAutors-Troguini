@@ -150,10 +150,20 @@ if (isset($_POST['bEnviarNombre'])) {
     $sql = "insert into autors(id_aut,nom_aut) values((select max(id_aut)+1 from autors as total),'$anadir') ";
     $resultado = $mysqli->query($sql) or die($sql);
 }
+$edita = "";
+if (isset($_POST['editar'])) {
+    $edita = $_POST['editar'];
+}
 if (isset($_POST['borrar'])) {
     $eliminar = $mysqli->real_escape_string($_POST['borrar']);
     $sql = "delete from autors where id_aut = $eliminar";
     $resultado  = $mysqli->query($sql) or die($sql);
+}
+if (isset($_POST['confirmarEditar'])) {
+    $nuevoNombre = $mysqli->real_escape_string($_POST["autorEditado"]);
+    $idAutor = $mysqli->real_escape_string($_POST["confirmarEditar"]);
+    $sql = "update autors set nom_aut='$nuevoNombre'where id_aut = $idAutor";
+    $resultado = $mysqli->query($sql) or die($sql);
 }
 ?>
 <html>
@@ -236,11 +246,19 @@ if (isset($_POST['borrar'])) {
     echo "<th>Nombre</th>";
     echo "</tr>";
     while($row = $cursor->fetch_assoc()){
-        echo "<tr>";
-        echo "<td>".$row["ID_AUT"]."</td>";
-        echo "<td>".$row["NOM_AUT"]."</td>";
-        echo "<td><button type='submit' name='editar' value='{$row["ID_AUT"]}'>Editar</button>&nbsp;&nbsp;<button type='submit' form='formulario' name='borrar' value='{$row["ID_AUT"]}'>Borrar</button></td>";
-        echo "</tr>";
+        if ($edita == $row["ID_AUT"]) {
+            echo "<tr>";
+            echo "<td>".$row["ID_AUT"]."</td>";
+            echo "<td><input type='text' name='autorEditado' value='{$row["NOM_AUT"]}' form='formulario'></td>";
+            echo "<td><button type='submit' form='formulario' name='confirmarEditar' value='{$row["ID_AUT"]}'>Confirmar</button>&nbsp;&nbsp;<button type='submit' form='formulario' name='cancelarEditar' value='{$row["ID_AUT"]}'>Cancelar</button></td>";
+            echo "</tr>";
+        }else{
+            echo "<tr>";
+            echo "<td>".$row["ID_AUT"]."</td>";
+            echo "<td>".$row["NOM_AUT"]."</td>";
+            echo "<td><button type='submit' form='formulario' name='editar' value='{$row["ID_AUT"]}'>Editar</button>&nbsp;&nbsp;<button type='submit' form='formulario' name='borrar' value='{$row["ID_AUT"]}'>Borrar</button></td>";
+            echo "</tr>";
+        }
     }
     echo "</table>";
     echo "<div>";
