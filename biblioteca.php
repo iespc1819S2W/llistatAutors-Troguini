@@ -145,7 +145,16 @@ if (isset($_POST['ultimo'])){
             break;
     }
 }
-
+if (isset($_POST['bEnviarNombre'])) {
+    $anadir = $mysqli->real_escape_string($_POST['nombreAnadir']);
+    $sql = "insert into autors(id_aut,nom_aut) values((select max(id_aut)+1 from autors as total),'$anadir') ";
+    $resultado = $mysqli->query($sql) or die($sql);
+}
+if (isset($_POST['borrar'])) {
+    $eliminar = $mysqli->real_escape_string($_POST['borrar']);
+    $sql = "delete from autors where id_aut = $eliminar";
+    $resultado  = $mysqli->query($sql) or die($sql);
+}
 ?>
 <html>
 <head>
@@ -171,9 +180,11 @@ if (isset($_POST['ultimo'])){
             var cancelarNombre = document.getElementById("bCancelarNombre");
             anadir.onclick = function(){
                 divAnadir.style.display = "block";
+                anadir.style.display = "none";
             }
             cancelarNombre.onclick = function(){
                 divAnadir.style.display = "none";
+                anadir.style.display = "";
             }
         }
     </script>
@@ -183,7 +194,7 @@ if (isset($_POST['ultimo'])){
     <img src="logo.jpg" alt="Pau Casesnoves" width="150" height="120">
     <h1>Pau Casesnoves</h1>
 </header>
-<form action="biblioteca.php" method="post">
+<form action="biblioteca.php" method="post" id="formulario">
     <input type="text" name="buscador" id="buscador" value="<?php echo $buscador;?>">
     <button name="botonBuscador" id="botonBuscador">Buscar</button>
     <select name="ordenacion" id="ordenacion">
@@ -207,8 +218,10 @@ if (isset($_POST['ultimo'])){
     <form action="" method="post">
         <label for="nombreAnadir">Nombre: </label>
         <input type="text" name="nombreAnadir" id="nombreAnadir"><br/>
-        <input type="submit" name="bEnviarNombre" id="bEnviarNombre">
-        <input type="button" name="bCancelarNombre" id="bCancelarNombre" value="Cancelar">
+        <p>
+            <input type="submit" name="bEnviarNombre" id="bEnviarNombre">
+            <input type="button" name="bCancelarNombre" id="bCancelarNombre" value="Cancelar">
+        </p>
     </form>
 </div>  
 <hr>    
@@ -226,7 +239,7 @@ if (isset($_POST['ultimo'])){
         echo "<tr>";
         echo "<td>".$row["ID_AUT"]."</td>";
         echo "<td>".$row["NOM_AUT"]."</td>";
-        echo "<td><button type='submit' form='' name='editar' value='{$row["ID_AUT"]}'>Editar</button>&nbsp;&nbsp;<button type='submit' name='borrar' value='{$row["ID_AUT"]}'>Borrar</button></td>";
+        echo "<td><button type='submit' name='editar' value='{$row["ID_AUT"]}'>Editar</button>&nbsp;&nbsp;<button type='submit' form='formulario' name='borrar' value='{$row["ID_AUT"]}'>Borrar</button></td>";
         echo "</tr>";
     }
     echo "</table>";
