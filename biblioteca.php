@@ -147,12 +147,28 @@ if (isset($_POST['ultimo'])){
 }
 if (isset($_POST['bEnviarNombre'])) {
     $anadir = $mysqli->real_escape_string($_POST['nombreAnadir']);
-    $sql = "insert into autors(id_aut,nom_aut) values((select max(id_aut)+1 from autors as total),'$anadir') ";
+    $anadirN = (isset($_POST['nacionalidad']))?$_POST['nacionalidad']:'NULL';//da problemas si es vacio.
+    $sql = "insert into autors(id_aut,nom_aut,FK_NACIONALITAT) values((select max(id_aut)+1 from autors as total),'$anadir','$anadirN') ";
     $resultado = $mysqli->query($sql) or die($sql);
 }
 $edita = "";
 if (isset($_POST['editar'])) {
     $edita = $_POST['editar'];
+     $ordenacion = isset($_POST['ordenacion'])?$_POST['ordenacion']:"";//viene del formulario del select
+    switch ($ordenacion){
+        case "ID_AUT_ASC":
+            $orden = "ID_AUT ASC";
+            break;
+        case "ID_AUT_DESC":
+            $orden = "ID_AUT DESC";
+            break;
+        case "NOM_AUT_ASC":
+            $orden = "NOM_AUT ASC";
+            break;
+        case "NOM_AUT_DESC":
+            $orden = "NOM_AUT DESC";
+            break;
+    }
 }
 if (isset($_POST['borrar'])) {
     $eliminar = $mysqli->real_escape_string($_POST['borrar']);
@@ -162,6 +178,9 @@ if (isset($_POST['borrar'])) {
 if (isset($_POST['confirmarEditar'])) {
     $nuevoNombre = $mysqli->real_escape_string($_POST["autorEditado"]);
     $idAutor = $mysqli->real_escape_string($_POST["confirmarEditar"]);
+    //Guardar la nacionalidad
+    //$FK_NACIONALITAT = $_POST['FK_NACIONALITAT']!="?"'".$_POST['FK_NACIONALITAT']."'":'NULL';
+
     $sql = "update autors set nom_aut='$nuevoNombre'where id_aut = $idAutor";
     $resultado = $mysqli->query($sql) or die($sql);
 }
@@ -228,6 +247,18 @@ if (isset($_POST['confirmarEditar'])) {
     <form action="" method="post">
         <label for="nombreAnadir">Nombre: </label>
         <input type="text" name="nombreAnadir" id="nombreAnadir"><br/>
+        <label>Nacionalitat: </label>
+        <!--Select con nacionalidades-->
+        <?php
+            $sql = "select NACIONALITAT from NACIONALITATS";
+            $cursorr = $mysqli->query($sql) or die($sql);
+            echo "<select name='nacionalidad'>";
+                echo "<option>Elige un Valor</option>";
+                while ($row = $cursorr->fetch_assoc()) {
+                    echo "<option value='{$row["NACIONALITAT"]}'>".$row['NACIONALITAT']."</option>";
+                }
+            echo "</select>";
+        ?>
         <p>
             <input type="submit" name="bEnviarNombre" id="bEnviarNombre">
             <input type="button" name="bCancelarNombre" id="bCancelarNombre" value="Cancelar">
@@ -237,25 +268,29 @@ if (isset($_POST['confirmarEditar'])) {
 <hr>    
 <?php
     //Necesito $buscador, $tuplasPagina, $tuplaInicial = ($pagina - 1) * $tuplasPagina;
+    
     $tuplaInicial = ($pagina - 1) * $tuplasPagina;
-    $sql = "select ID_AUT,NOM_AUT from AUTORS where ID_AUT like '%$buscador%' or NOM_AUT like '%$buscador%' order by $orden limit $tuplaInicial,$tuplasPagina";
+    $sql = "select ID_AUT,NOM_AUT, FK_NACIONALITAT from AUTORS where ID_AUT like '%$buscador%' or NOM_AUT like '%$buscador%' order by $orden limit $tuplaInicial,$tuplasPagina";
     $cursor = $mysqli->query($sql) or die($sql);
     echo "<table>";
     echo "<tr>";
     echo "<th>Codi</th>";
     echo "<th>Nombre</th>";
+    echo "<th>Nacionalitat</th>";
     echo "</tr>";
     while($row = $cursor->fetch_assoc()){
         if ($edita == $row["ID_AUT"]) {
             echo "<tr>";
             echo "<td>".$row["ID_AUT"]."</td>";
             echo "<td><input type='text' name='autorEditado' value='{$row["NOM_AUT"]}' form='formulario'></td>";
+            echo "<td>".$row["FK_NACIONALITAT"]."</td>";//Ser un select con nacionalidades
             echo "<td><button type='submit' form='formulario' name='confirmarEditar' value='{$row["ID_AUT"]}'>Confirmar</button>&nbsp;&nbsp;<button type='submit' form='formulario' name='cancelarEditar' value='{$row["ID_AUT"]}'>Cancelar</button></td>";
             echo "</tr>";
         }else{
             echo "<tr>";
             echo "<td>".$row["ID_AUT"]."</td>";
             echo "<td>".$row["NOM_AUT"]."</td>";
+            echo "<td>".$row["FK_NACIONALITAT"]."</td>";
             echo "<td><button type='submit' form='formulario' name='editar' value='{$row["ID_AUT"]}'>Editar</button>&nbsp;&nbsp;<button type='submit' form='formulario' name='borrar' value='{$row["ID_AUT"]}'>Borrar</button></td>";
             echo "</tr>";
         }
