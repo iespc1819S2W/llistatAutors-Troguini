@@ -55,7 +55,7 @@ if (isset($_POST['enviar'])){ //boton del formulario y crea la variable que vien
 }else{
     $orden = "ID_AUT ASC";
 }
-$tuplasPagina = 10;
+$tuplasPagina = 20;
 $sqlT = "select count(*) as numTuplas from AUTORS where NOM_AUT like '%$buscador%' or ID_AUT like '%$buscador%'";
 $resultado = $mysqli -> query($sqlT) or die($sqlT);
 if ($row = $resultado-> fetch_assoc()){
@@ -145,6 +145,7 @@ if (isset($_POST['ultimo'])){
             break;
     }
 }
+
 ?>
 <html>
 <head>
@@ -164,6 +165,16 @@ if (isset($_POST['ultimo'])){
                         echo $ordenacion;
                     }
                 ?>"
+            var divAnadir = document.getElementById("formAnadir");
+            divAnadir.style.display = "none";
+            var anadir = document.getElementById("anadir");
+            var cancelarNombre = document.getElementById("bCancelarNombre");
+            anadir.onclick = function(){
+                divAnadir.style.display = "block";
+            }
+            cancelarNombre.onclick = function(){
+                divAnadir.style.display = "none";
+            }
         }
     </script>
 </head>
@@ -190,73 +201,18 @@ if (isset($_POST['ultimo'])){
     <button name="siguiente">Siguiente</button>
     <button name="ultimo">Ultimo</button>
 </form>
+<hr>
+<button type="button" id="anadir">Añadir</button>
+<div id="formAnadir">
+    <form action="" method="post">
+        <label for="nombreAnadir">Nombre: </label>
+        <input type="text" name="nombreAnadir" id="nombreAnadir"><br/>
+        <input type="submit" name="bEnviarNombre" id="bEnviarNombre">
+        <input type="button" name="bCancelarNombre" id="bCancelarNombre" value="Cancelar">
+    </form>
+</div>  
+<hr>    
 <?php
-//if (isset($orden) || isset($buscador)){
-//    if (isset($orden)){
-//        if ($buscador){
-//        //$tuplaInicial = ($pagina - 1) * $tuplasPagina;
-//        $sql = "select * from AUTORS where ID_AUT like '%$buscador%' or NOM_AUT like '%$buscador%' order by $orden limit $tuplaInicial";
-//            $cursor = $mysqli->query($sql) or die($sql);//creamos el cursor.
-//            echo "<table>";
-//            echo "<tr>";
-//            echo "<th>Codi</th>";
-//            echo "<th>Nombre</th>";
-//            echo "</tr>";
-//            while($row = $cursor->fetch_assoc()){
-//                echo "<tr>";
-//                echo "<td>".$row["ID_AUT"]."</td>";
-//                echo "<td>".$row["NOM_AUT"]."</td>";
-//                echo "</tr>";
-//            }
-//            echo "</table>";
-//        }else{
-//        $sql = "select ID_AUT, NOM_AUT from AUTORS order by $orden limit $tuplasPagina";
-//        $cursor = $mysqli->query($sql) or die($sql);//creamos el cursor.
-//        echo "<table>";
-//        echo "<tr>";
-//        echo "<th>Codi</th>";
-//        echo "<th>Nombre</th>";
-//        echo "</tr>";
-//        while($row = $cursor->fetch_assoc()){
-//            echo "<tr>";
-//            echo "<td>".$row["ID_AUT"]."</td>";
-//            echo "<td>".$row["NOM_AUT"]."</td>";
-//            echo "</tr>";
-//        }
-//        echo "</table>";
-//        }
-//    }else{
-//        $sqlB = "select * from AUTORS where ID_AUT like '%$buscador%' or NOM_AUT like '%$buscador%' limit $tuplasPagina";
-//        $cursorB = $mysqli->query($sqlB) or die($sqlB);
-//        echo "<table>";
-//        echo "<tr>";
-//        echo "<th>Codi</th>";
-//        echo "<th>Nombre</th>";
-//        echo "</tr>";
-//        while($rowB = $cursorB->fetch_assoc()){
-//            echo "<tr>";
-//            echo "<td>".$rowB["ID_AUT"]."</td>";
-//            echo "<td>".$rowB["NOM_AUT"]."</td>";
-//            echo "</tr>";
-//        }
-//        echo "</table>";
-//    }
-//}else{
-//    $sql = "select ID_AUT, NOM_AUT from AUTORS order by  ID_AUT asc ";
-//    $cursor = $mysqli->query($sql) or die($sql);//creamos el cursor.
-//    echo "<table>";
-//    echo "<tr>";
-//    echo "<th>Codi</th>";
-//    echo "<th>Nombre</th>";
-//    echo "</tr>";
-//    while($row = $cursor->fetch_assoc()){
-//        echo "<tr>";
-//        echo "<td>".$row["ID_AUT"]."</td>";
-//        echo "<td>".$row["NOM_AUT"]."</td>";
-//        echo "</tr>";
-//    }
-//    echo "</table>";
-//}
     //Necesito $buscador, $tuplasPagina, $tuplaInicial = ($pagina - 1) * $tuplasPagina;
     $tuplaInicial = ($pagina - 1) * $tuplasPagina;
     $sql = "select ID_AUT,NOM_AUT from AUTORS where ID_AUT like '%$buscador%' or NOM_AUT like '%$buscador%' order by $orden limit $tuplaInicial,$tuplasPagina";
@@ -270,6 +226,7 @@ if (isset($_POST['ultimo'])){
         echo "<tr>";
         echo "<td>".$row["ID_AUT"]."</td>";
         echo "<td>".$row["NOM_AUT"]."</td>";
+        echo "<td><button type='submit' form='' name='editar' value='{$row["ID_AUT"]}'>Editar</button>&nbsp;&nbsp;<button type='submit' name='borrar' value='{$row["ID_AUT"]}'>Borrar</button></td>";
         echo "</tr>";
     }
     echo "</table>";
