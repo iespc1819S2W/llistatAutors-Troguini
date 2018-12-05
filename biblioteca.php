@@ -28,6 +28,11 @@ $mysqli->set_charset("utf8");//le damos utf8 a los valores que nos vienen de la 
         echo "<td>".$row["NOM_AUT"]."</td>";
     echo "</tr>";
 }*/
+
+function selectNacionalidad(){
+    
+}
+
 $buscador = "";
 $pagina = 1;
 
@@ -147,9 +152,16 @@ if (isset($_POST['ultimo'])){
 }
 if (isset($_POST['bEnviarNombre'])) {
     $anadir = $mysqli->real_escape_string($_POST['nombreAnadir']);
-    $anadirN = (isset($_POST['nacionalidad']))?$_POST['nacionalidad']:'NULL';//da problemas si es vacio.
-    $sql = "insert into autors(id_aut,nom_aut,FK_NACIONALITAT) values((select max(id_aut)+1 from autors as total),'$anadir','$anadirN') ";
-    $resultado = $mysqli->query($sql) or die($sql);
+    $anadirN = $_POST['nacionalidad'];
+    if ($anadirN == 'nulo') {
+        $sql = "insert into autors(id_aut,nom_aut) values((select max(id_aut)+1 from autors as total),'$anadir') ";
+        $resultado = $mysqli->query($sql) or die($sql);
+    }else{
+        $sql = "insert into autors(id_aut,nom_aut,FK_NACIONALITAT) values((select max(id_aut)+1 from autors as total),'$anadir','$anadirN') ";
+        $resultado = $mysqli->query($sql) or die($sql);
+    }
+    // $anadirN = $_POST['nacionalidad']!="?".$_POST['nacionalidad'].":'NULL'";//da problemas si es vacio.
+    
 }
 $edita = "";
 if (isset($_POST['editar'])) {
@@ -178,11 +190,20 @@ if (isset($_POST['borrar'])) {
 if (isset($_POST['confirmarEditar'])) {
     $nuevoNombre = $mysqli->real_escape_string($_POST["autorEditado"]);
     $idAutor = $mysqli->real_escape_string($_POST["confirmarEditar"]);
+    $nuevaNacionalidad = $_POST["editarNacionalidad"];
+    if ($nuevaNacionalidad == "nulo") {
+        $sql = "update autors set nom_aut='$nuevoNombre'where id_aut = $idAutor";
+        $resultado = $mysqli->query($sql) or die($sql);
+    }else{
+        $nuevaNacionalidad = $mysqli->real_escape_string($_POST["editarNacionalidad"]);
+        $sql = "update autors set nom_aut='$nuevoNombre', FK_NACIONALITAT = '$nuevaNacionalidad' where id_aut = $idAutor";
+        $resultado = $mysqli->query($sql) or die($sql);
+    }
+    //$mysqli->real_escape_string($_POST["editarNacionalidad"]);
     //Guardar la nacionalidad
-    //$FK_NACIONALITAT = $_POST['FK_NACIONALITAT']!="?"'".$_POST['FK_NACIONALITAT']."'":'NULL';
+    //$FK_NACIONALITAT = $_POST['FK_NACIONALITAT']!="?"'".$_POST['FK_NACIONALITAT']."'":'NULL'";
 
-    $sql = "update autors set nom_aut='$nuevoNombre'where id_aut = $idAutor";
-    $resultado = $mysqli->query($sql) or die($sql);
+    
 }
 ?>
 <html>
@@ -253,11 +274,12 @@ if (isset($_POST['confirmarEditar'])) {
             $sql = "select NACIONALITAT from NACIONALITATS";
             $cursorr = $mysqli->query($sql) or die($sql);
             echo "<select name='nacionalidad'>";
-                echo "<option>Elige un Valor</option>";
+                echo "<option value='nulo'>Elige un Valor</option>";
                 while ($row = $cursorr->fetch_assoc()) {
                     echo "<option value='{$row["NACIONALITAT"]}'>".$row['NACIONALITAT']."</option>";
                 }
             echo "</select>";
+            // selectNacionalidad();
         ?>
         <p>
             <input type="submit" name="bEnviarNombre" id="bEnviarNombre">
@@ -283,7 +305,17 @@ if (isset($_POST['confirmarEditar'])) {
             echo "<tr>";
             echo "<td>".$row["ID_AUT"]."</td>";
             echo "<td><input type='text' name='autorEditado' value='{$row["NOM_AUT"]}' form='formulario'></td>";
-            echo "<td>".$row["FK_NACIONALITAT"]."</td>";//Ser un select con nacionalidades
+            // echo "<td>".$row["FK_NACIONALITAT"]."</td>";//Ser un select con nacionalidades
+            $sqlN = "select NACIONALITAT from NACIONALITATS";
+            $cursorN = $mysqli->query($sqlN) or die($sqlN);
+            echo "<td>";
+            echo "<select name='editarNacionalidad' form='formulario'>";
+                echo "<option value='nulo'>Elige un Valor</option>";
+                while ($rowN = $cursorN->fetch_assoc()) {
+                    echo "<option value='{$rowN["NACIONALITAT"]}'>".$rowN['NACIONALITAT']."</option>";
+                }
+            echo "</select>";
+            echo "</td>";
             echo "<td><button type='submit' form='formulario' name='confirmarEditar' value='{$row["ID_AUT"]}'>Confirmar</button>&nbsp;&nbsp;<button type='submit' form='formulario' name='cancelarEditar' value='{$row["ID_AUT"]}'>Cancelar</button></td>";
             echo "</tr>";
         }else{
